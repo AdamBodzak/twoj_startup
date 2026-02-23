@@ -48,7 +48,14 @@ php artisan migrate
 
 e-mail jest wysyłany do kontenera aplikacji Mailpit. Podgląd jest możliwy w przeglądarce pod adresem http://localhost:8025/
 
+Wejście do kontenera PHP
+>docker exec -it recruitment-task-twoj_startup-php-1 sh
+
 # Endpoints 
+
+Do repo dodałem plik postman z dodanymi wszystkimi endpointami. Plik do importu do postman znajduje się w katalogu
+
+> postman/Twój startap.postman_collection.json
 
 Aplikacja zawiera następujące endpointy do obsługi użytkowników:
 
