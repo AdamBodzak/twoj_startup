@@ -1,1 +1,1 @@
-Witamy użytkownika {{ $user->full_name }}
+Witamy użytkownika {{ $user->fullName() }}
