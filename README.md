@@ -46,6 +46,12 @@ composer install
 
 php artisan migrate
 
+dodatkowo trzeba dodać host w przypadku mac to należy zedytować plik /etc/hosts dodając 
+
+> 127.0.0.1 twoj_startup.loc.pl
+
+od teraz z aplikacją będzie można rozmawiać za pomocą domeny http://twoj_startup.loc.pl:8088/
+
 e-mail jest wysyłany do kontenera aplikacji Mailpit. Podgląd jest możliwy w przeglądarce pod adresem http://localhost:8025/
 
 Wejście do kontenera PHP
