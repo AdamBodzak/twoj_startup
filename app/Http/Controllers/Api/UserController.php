@@ -9,15 +9,24 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $perPage = (int) $request->query('per_page', 10);
+        $perPage = max(1, min($perPage, 100)); // limit 1..100
+
+        $users = User::query()
+            ->with('userEmailsRelation') // eager loading relacji
+            ->orderByDesc('id')
+            ->paginate($perPage);
+
+        return UserResource::collection($users);
     }
 
     /**
@@ -51,9 +60,9 @@ class UserController extends Controller
                 $emails[0]['is_primary'] = true;
             }
 
-            $user->emails()->createMany($emails->toArray());
+            $user->userEmailsRelation()->createMany($emails->toArray());
 
-            return $user->load('emails');
+            return $user->load('userEmailsRelation');
         });
 
         return (new UserResource($user))
@@ -76,7 +85,7 @@ class UserController extends Controller
     {
         $user->update($request->validated());
 
-        return new UserResource($user->load('emails'));
+        return new UserResource($user->load('userEmailsRelation'));
     }
 
     /**

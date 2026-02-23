@@ -3,10 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
-class StoreUserEmailRequest extends FormRequest
+class UpdateUserEmailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -14,6 +13,13 @@ class StoreUserEmailRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email')) {
+            $this->merge(['email' => mb_strtolower(trim($this->email))]);
+        }
     }
 
     /**
@@ -24,13 +30,17 @@ class StoreUserEmailRequest extends FormRequest
     public function rules(): array
     {
         $user = $this->route('user');
+        $emailModel = $this->route('email'); // UserEmail
 
         return [
             'email' => [
+                'sometimes',
                 'required',
                 'email:rfc,dns',
                 'max:255',
-                Rule::unique('user_emails', 'email')->where('user_id', $user->id),
+                Rule::unique('user_emails', 'email')
+                    ->where('user_id', $user->id)
+                    ->ignore($emailModel->id),
             ],
             'is_primary' => ['sometimes', 'boolean'],
         ];

@@ -18,7 +18,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
-            'full_name' => $this->full_name,
+            'full_name' => $this->fullName(),
             'phone' => $this->phone,
             'emails' => UserEmailResource::collection($this->whenLoaded('emails')),
             'created_at' => $this->created_at?->toISOString(),

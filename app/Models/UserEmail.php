@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserEmail extends Model
 {
+    protected $fillable = [
+        'user_id',
+        'email',
+        'is_primary',
+    ];
     protected $casts = ['is_primary' => 'bool'];
 
     /**
