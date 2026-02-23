@@ -1,0 +1,89 @@
+services:
+  twoj_startup-php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /application
+    volumes:
+      - ./:/application
+    environment:
+      APP_ENV: local
+    expose: ["9000"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - twoj_startup-db
+    networks: [twoj_startup_net]
+
+  twoj_startup-db:
+    image: mysql:9.2
+    container_name: twoj_startup-db
+    networks: [ twoj_startup_net ]
+    restart: always
+    environment:
+      MYSQL_DATABASE: twoj_startup
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_INITDB_SKIP_TZINFO: 1
+      MYSQL_ROOT_HOST: '%'
+    command:
+      - --skip-name-resolve
+      - --max_allowed_packet=4G
+      - --innodb_buffer_pool_size=12G
+      - --innodb_log_file_size=12G
+      - --innodb_flush_log_at_trx_commit=0
+      - --innodb_doublewrite=0
+      - --innodb_autoinc_lock_mode=2
+      - --innodb_checksum_algorithm=none
+    deploy:
+      resources:
+        limits:
+          memory: 12G  # 80% z 15GB RAM
+          cpus: '8'    # 8 z 10 dostępnych rdzeni
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - twoj_startup-data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - /var/lib/mysql-files  # dodatkowy katalog dla operacji na plikach
+#    ports:
+#      - "127.0.0.1:3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  twoj_startup-phpmyadmin:
+    image: phpmyadmin:latest
+    networks: [twoj_startup_net]
+    restart: always
+    environment:
+      PMA_HOST: twoj_startup-db
+      PMA_USER: root
+      PMA_PASSWORD: root
+      UPLOAD_LIMIT: 100000M
+      MEMORY_LIMIT: 100000M
+    ports:
+      - "8080:80"
+
+  twoj_startup-nginx:
+    image: nginx:alpine
+    depends_on: [twoj_startup-php]
+    volumes:
+      - ./:/application:ro,cached
+      - ./docker-nginx:/etc/nginx/conf.d:r
+    ports:
+      - "8088:80"
+    networks: [twoj_startup_net]
+
+networks:
+  twoj_startup_net:
+    name: twoj_startup_net
+
+volumes:
+  twoj_startup-data:
+    name: twoj_startup-data
