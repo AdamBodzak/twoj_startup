@@ -75,10 +75,28 @@ services:
     depends_on: [twoj_startup-php]
     volumes:
       - ./:/application:ro,cached
-      - ./docker-nginx:/etc/nginx/conf.d:r
+      - ./docker-nginx:/etc/nginx/conf.d:ro
     ports:
       - "8088:80"
     networks: [twoj_startup_net]
+
+  twoj_startup-mailpit:
+    image: axllent/mailpit:latest
+    container_name: twoj_startup-mailpit
+    restart: unless-stopped
+    networks:
+      - twoj_startup_net
+    ports:
+      - "127.0.0.1:8025:8025"  # UI Mailpit: http://localhost:8025
+      - "127.0.0.1:1026:1025"  # SMTP: localhost:1025
+    volumes:
+      - twoj_startup_mailpit_data:/data
+    command: >
+      --database /data/mailpit.db
+      --listen 0.0.0.0:8025
+      --smtp 0.0.0.0:1025
+      --smtp-auth-accept-any
+      --smtp-auth-allow-insecure
 
 networks:
   twoj_startup_net:
@@ -87,3 +105,5 @@ networks:
 volumes:
   twoj_startup-data:
     name: twoj_startup-data
+  twoj_startup_mailpit_data:
+    name: twoj_startup_mailpit_data
